@@ -27,7 +27,7 @@
 			init();
 			animate();
 
-			var axis = new THREE.Vector3(1,0,0);
+			var axis = new THREE.Vector3(0,0,1);
 
 			var torso_joint_1;
 			var torso_joint_2;
@@ -65,7 +65,6 @@
 				camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000 );
 				camera.position.set(1, 2, 3);
 				scene.add(camera);
-
 
 				//LIGHTS
 				var hemilight = new THREE.HemisphereLight(0xffffff);
@@ -126,10 +125,10 @@
 				loader.load('./assets/RiggedFigure.glb', function(glb){
 					model = glb.scene;
 					scene.add(model);
-
+					console.log(model.rotation);
 					model.traverse(function(object){
 						if(object.isMesh) object.castShadow = true;
-						console.log(object);
+						//console.log(object);
 						//PLEASE CHANGE TO SWITCH CASE THX LOL
 						if(object.name == 'torso_joint_1'){
 							torso_joint_1 = object;
@@ -184,6 +183,11 @@
 						}
 					});
 
+					arm_joint_R_1.rotation.set(-0.356, -1.255, 1.448);
+					arm_joint_R_2.rotation.set(3.1, -0.728, 3.213);
+					arm_joint_L_1.rotation.set(2.903, -1.255, -1.641);
+					arm_joint_L_2.rotation.set(0.116, 0.268, 0.068);
+
 					controls.update();
 
 					skeleton_helper = new THREE.SkeletonHelper(model);
@@ -191,13 +195,6 @@
 					skeleton_helper.visible=true;
 					scene.add(skeleton_helper);
 					done_loading = 'true';
-					/*
-					mixer = new THREE.AnimationMixer(model);
-					var anim = glb.animations;
-					console.log(anim);
-
-					action = mixer.clipAction(anim[0]);
-					action.play();*/
 				},
 
 				// called while loading is progressing
@@ -212,6 +209,7 @@
 
 
 
+
 			document.addEventListener('keydown', onKeyDown, false);
 			document.addEventListener('keyup', onKeyUp, false);
 			function onKeyDown(event){
@@ -219,6 +217,28 @@
 				if(key == 87){
 					if(running == 'false'){
 						running = 'true';
+						turnFront();
+						run();
+					}
+				}
+				else if(key == 65){
+					if(running == 'false'){
+						running = 'true';
+						turnLeft();
+						run();
+					}
+				}
+				else if(key == 68){
+					if(running == 'false'){
+						running = 'true';
+						turnRight();
+						run();
+					}
+				}
+				else if(key == 83){
+					if(running == 'false'){
+						running = 'true';
+						turnBack();
 						run();
 					}
 				}
@@ -227,61 +247,114 @@
 				var key = event.which;
 				if(key == 87){
 					running = 'false';
+					resetModelPosition();
+				}
+				else if(key == 65){
+					running = 'false';
+					resetModelPosition();
+				}
+				else if(key == 68){
+					running = 'false';
+					resetModelPosition();
+				}
+				else if(key == 83){
+					running = 'false';
+					resetModelPosition();
 				}
 			};
 
 
-			function run(){
-				i+=0.1;
 
-				model.position.z += i/100;
-				
-				var tween_start_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation]).to([{x:2.5}, {x:-0.47, y:0.564, z:0.255}], 500).start();
+
+			function run(){
+			
+				var tween_start_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation, arm_joint_L_1.rotation, arm_joint_L_2.rotation]).to([{x:0.312, y: 0.591, z: -3.108}, {x:-1.645, y:-0.005, z:0.614}, {x: 2.903, y: -1.255, z: -2.391}, {x: 0.116, y: 0.268, z: 0.485}], 500).start();
 
 				tween_start_L.onComplete(function(){
-					var tween_middle1_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation]).to([{x:0}, {x:-1.9, y: 0.1, z: 0.65}], 500).start();
+					var tween_middle_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation, arm_joint_L_1.rotation, arm_joint_L_2.rotation]).to([{x: 0.912, y: 0.591, z: -3.108}, {x:-0.405, y: 0.587, z: 0.192}, {x: 2.903, y: -1.255, z: -1.641}, {x: 0.116, y: 0.268, z: 0.068}], 300).start();
 					
-					tween_middle1_L.onComplete(function(){
-						var tween_middle2_L = new TWEEN.Tween(leg_joint_L_2.rotation).to({x: 0.2, y: 0.5, z: 0.0}, 500).start();
-						
-						tween_middle2_L.onComplete(function(){
-							var tween_end_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation]).to([{x: 1.412, y: 0.591, z: -3.108}, {x: -0.521, y:0.564, z: 0.255}],500).start();
+					tween_middle_L.onComplete(function(){
+						var tween_end_L = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation, arm_joint_L_1.rotation, arm_joint_L_2.rotation]).to([{x: 2.512, y: 0.591, z: -3.108}, {x: -0.847, y: 0.465, z: 0.417}, {x:2.903, y: -1.255, z: -1.041}, {x: -0.084, y: -0.131, z: 1.367}], 700).start();
 							
-							tween_end_L.onComplete(function(){
-								running = 'false';
-							});
+						tween_end_L.onComplete(function(){
+							var tween_reset_L = new TWEEN.Tween([arm_joint_L_1.rotation, arm_joint_L_2.rotation]).to([{x: 2.903, y: -1.255, z: -1.641}, {x:0.116, y: 0.268, z: 0.068}], 200).start();
+							running = 'false';
 						});
 					});
 				});
 
 
-				var tween_start_R = new TWEEN.Tween(leg_joint_R_1.rotation).to({x:0.5}, 500).start();
+				var tween_start_R = new TWEEN.Tween([leg_joint_R_1.rotation, leg_joint_R_2.rotation, arm_joint_R_1.rotation, arm_joint_R_2.rotation]).to([{x: 2.512, y: -0.096, z: 3.102}, {x: -0.847, y: -0.144, z: -0.078}, {x: -0.356, y: -1.155, z: 2.048}, {x:1.713, y: -0.328, z: 2.1}], 700).start();
+
 				tween_start_R.onComplete(function(){
-					var tween_middle_R = new TWEEN.Tween([leg_joint_R_1.rotation, leg_joint_R_2.rotation]).to([{x: 1.4, y: -0.1, z: 3.1}, {x: -0.52, y:-0.16, z: 0.01}], 500).start();
+					var tween_middle_R = new TWEEN.Tween([leg_joint_R_1.rotation, leg_joint_R_2.rotation, arm_joint_R_1.rotation, arm_joint_R_2.rotation]).to([{x: 0.312, y: -0.096, z: 3.102}, {x: -1.645, y:0.045, z: -0.157}, {x: -0.356, y: -1.255, z: 1.448}, {x: 3.1, y: -0.528, z: 3.213}], 500).start();
+
 					tween_middle_R.onComplete(function(){
-						var tween_end_R = new TWEEN.Tween([leg_joint_R_1.rotation, leg_joint_R_2.rotation]).to([{x:2.5}, {x:-1.9, y: -0.16, z: 0.01}], 500).start();
+						var tween_end_R = new TWEEN.Tween([leg_joint_R_1.rotation, leg_joint_R_2.rotation, arm_joint_R_1.rotation, arm_joint_R_2.rotation]).to([{x: 0.912, y: -0.096, z: 3.102}, {x:-0.405, y: -0.163, z: -0.008}, {x: -0.356, y: -1.255, z: 0.648}, {x: 2.7, y: -0.528, z: 2.613}], 300).start();
+						tween_end_R.onComplete(function(){
+							var tween_reset_R = new TWEEN.Tween([arm_joint_R_1.rotation, arm_joint_R_2.rotation]).to([{x: -0.356, y: -1.255, z: 1.448}, {x: 3.1, y: -0.528, z: 3.213}], 200).start();
+						});
 					});
 				});
 
-				var model_movement_tween = new TWEEN.Tween(model.position).to({z: model.position.z + 1}, 2000).start();
 
-				var camera_movement_tween = new TWEEN.Tween(camera.position).to({z: camera.position.z + 1}, 2000).start();
-				controls.update();
+				var model_movement_tween;
+				var camera_movement_tween;
+				if(model.rotation.y == 0){
+					model_movement_tween = new TWEEN.Tween(model.position).to({z: model.position.z + 1}, 1700).start();
+					camera_movement_tween = new TWEEN.Tween(camera.position).to({z: camera.position.z + 1}, 1700).start();
+				}
 
-				console.log(camera.position);
+				else if(model.rotation.y == Math.PI/2){
+					model_movement_tween = new TWEEN.Tween(model.position).to({x: model.position.x + 1}, 1700).start();
+					camera_movement_tween = new TWEEN.Tween(camera.position).to({x: camera.position.x + 1}, 1700).start();
+				}
+
+				else if(model.rotation.y == Math.PI*3/2){
+					model_movement_tween = new TWEEN.Tween(model.position).to({x: model.position.x - 1}, 1700).start();
+					camera_movement_tween = new TWEEN.Tween(camera.position).to({x: camera.position.x - 1}, 1700).start();
+				}
+
+				else if(model.rotation.y == Math.PI){
+					model_movement_tween = new TWEEN.Tween(model.position).to({z: model.position.z - 1}, 1700).start();
+					camera_movement_tween = new TWEEN.Tween(camera.position).to({z: camera.position.z - 1}, 1700).start();
+				}
+
+		
 			};
 
 
+
+
+			function resetModelPosition(){
+				TWEEN.getAll().forEach(function(e){console.log(e)});
+				TWEEN.getAll().forEach(function(tween){ tween.stop()});
+				var reset_model = new TWEEN.Tween([leg_joint_L_1.rotation, leg_joint_L_2.rotation, arm_joint_L_1.rotation, arm_joint_L_2.rotation, leg_joint_R_1.rotation, leg_joint_R_2.rotation, arm_joint_R_1.rotation, arm_joint_R_2.rotation]).to([{x: 1.412, y: 0.591, z: -3.108}, {x:-0.521, y: 0.564, z: 0.255}, {x: 2.903, y: -1.255, z: -1.641}, {x: 0.116, y: 0.268, z: 0.068}, {x: 1.427, y: -0.096, z: 3.102}, {x: -0.438, y:0.163, z: -0.016}, {x: -0.356, y: -1.255, z: 1.448}, {x: 3.1, y: -0.528, z: 3.213}], 300).start();
+			};
+
+
+			function turnFront(){
+				var turn = new TWEEN.Tween(model.rotation).to({y: 0}, 300).start();
+			}
+			function turnLeft(){
+				var tween = new TWEEN.Tween(model.rotation).to({y: Math.PI/2}, 300).start();
+			};
+			function turnRight(){
+				var tween = new TWEEN.Tween(model.rotation).to({y: Math.PI*3/2}, 300).start();
+			};
+			function turnBack(){
+				var tween = new TWEEN.Tween(model.rotation).to({y: Math.PI}, 300).start();
+			}
 
 
 			function animate(){
 				requestAnimationFrame(animate);
 				var mixerUpdateDelta = clock.getDelta();
 				if(done_loading == 'true'){
+					controls.target.set(model.position.x, 1, model.position.z);
 					controls.update();
 					TWEEN.update();
 				}
-				//camera.translateZ(-1);
 				controls.update();
 				stats.update();
 				renderer.render(scene, camera);
