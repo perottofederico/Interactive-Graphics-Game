@@ -20,7 +20,7 @@
 			import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 			import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
 			import TWEEN from './js/tween.esm.js';
-			var scene, camera, renderer, controls, stats, clock;
+			var scene, camera, renderer, controls, stats, clock, timer;
 			var model;
 
 			var running = false;
@@ -394,7 +394,7 @@
 							model.position.z < point_light_pos.z+1.5 && 
 							model.position.z > point_light_pos.z-1.5){
 								off += 1;
-								if(off == 1) clock.start();
+								if(off == 1) timer = clock.start();
 								l.visible = false;
 						}
 					})
@@ -452,6 +452,7 @@
 							
 						tween_end_L.onComplete(function(){
 							var tween_reset_L = new TWEEN.Tween([arm_joint_L_1.rotation, arm_joint_L_2.rotation]).to([{x: 2.903, y: -1.255, z: -1.641}, {x:0.116, y: 0.268, z: 0.068}], 200).start();
+								running = false;
 						});
 					});
 				});
@@ -499,12 +500,13 @@
 
 
 			function animate(){
+				if(off == 2){
+					victory(clock.getElapsedTime());
+					return;
+				}
+
 				requestAnimationFrame(animate);
 				TWEEN.update();
-
-				if(off == 4){
-					console.log('Victory');
-				}
 
 				var time = performance.now();
 				var delta = (time - prevTime)/500;
@@ -566,6 +568,56 @@
 				renderer.render(scene, camera);
 			};
 
+
+			function victory(time){
+				const victory_div = document.createElement("div");
+				victory_div.setAttribute("id", "win");
+				victory_div.style.position = 'absolute';
+				victory_div.style.paddingTop =10+"%";
+				victory_div.style.top = 0;
+				victory_div.style.bottom = 0;
+				victory_div.style.textAlign = 'center';
+				victory_div.style.width = 100+"%";
+				document.body.appendChild(victory_div);
+
+				const text = document.createElement("h");
+				text.innerText = "Victory!";
+				text.style.textAlign = 'center';
+				text.className = 'center';
+				text.style.color = 'white';
+				text.style.fontSize = 45+'px';
+				text.style.color = 'white';
+				text.style.marginTop = 50+'px';
+				text.style.marginBottom = 50+'px';
+				victory_div.appendChild(text);
+
+				const time_text = document.createElement("h1");
+				time_text.innerText = time.toString();
+				time_text.style.color = 'white';
+				victory_div.appendChild(time_text);
+
+				const new_game = document.createElement("button");
+				new_game.setAttribute("class", "button");
+				new_game.innerText = "New Game";
+				new_game.style.marginTop = 25+'%';
+				victory_div.appendChild(new_game);
+				new_game.addEventListener('click', function(){
+					off = 0;
+					model.position.set(0, 0, -7);
+					camera.position.set(0, 2.5, -11.5);
+					controls.target.set(model.position.x, 0.5, model.position.z);
+					controls.update();
+					point_lights.forEach(function(l){ l.visible = true});
+					if(facing_forward == false){
+						facing_forward = true;
+						turnFront();
+
+					}
+					resetModelPosition();
+					document.getElementById("win").remove();
+					animate();
+				});
+			};
 
 
 		</script>
