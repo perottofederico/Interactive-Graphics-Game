@@ -524,7 +524,7 @@
 
 			function animate(){
 				//Check for victory condition before requesting next frame
-				if(off == 2){
+				if(off == 4){
 					victory(clock.getElapsedTime());
 					return;
 				}
@@ -577,7 +577,7 @@
 					controls.target.set(model.position.x, 0.5, model.position.z);
 				}
 
-				if(off > 0 && clock.getElapsedTime() > 50.99){
+				if(off > 0 && clock.getElapsedTime() > 34.99){
 					console.log('Retry');
 					off = 0;
 					point_lights.forEach(function(l){
