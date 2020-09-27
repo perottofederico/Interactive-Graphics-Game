@@ -17,3 +17,6 @@ The **E** key can be used to turn off a light if the character is close enough t
 
 ## Link to play:
 https://sapienzainteractivegraphicscourse.github.io/final-project-bbms/
+
+## Report:
+You can find the report [here](https://github.com/SapienzaInteractiveGraphicsCourse/final-project-bbms/blob/master/Report.pdf)
