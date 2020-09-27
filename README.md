@@ -12,7 +12,7 @@ The **W** and **S** key are used to move along the z axis, while the **A** and *
 The **E** key can be used to turn off a light if the character is close enough to it.
 
 # 
-![preview](/report/images/preview.png)
+![preview](/Report/images/preview.png)
 # 
 
 ## Link to play:
