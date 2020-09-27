@@ -52,7 +52,7 @@
 			var ray_forward = new THREE.Raycaster(new THREE.Vector3(0,0,0), z_axis_forward, 0.1,0.7);
 			var ray_left = new THREE.Raycaster(new THREE.Vector3(0,0,0), x_axis_forward, 0.1, 0.7);
 			var ray_right = new THREE.Raycaster(new THREE.Vector3(0,0,0),x_axis_backward, 0.1, 0.7);
-			var ray_back = new THREE.Raycaster(new THREE.Vector3(0,0,0), x_axis_backward, 0.1, 0.7);
+			var ray_back = new THREE.Raycaster(new THREE.Vector3(0,0,0), z_axis_backward, 0.1, 0.7);
 
 			var prevTime = performance.now();
 
@@ -163,9 +163,6 @@
 
 				point_light_3 = new THREE.PointLight(0xef7807, 1, 10, 2);
 
-				point_light_3.shadow.mapSize.width = 128;
-				point_light_3.shadow.mapSize.height = 128;
-
 				torch_3.position.set(4.65, 1, 7);
 				torch_3.rotation.y = Math.PI/2;		
 				point_light_3.position.set(4.6, 1, 7);
@@ -182,6 +179,7 @@
 				point_light_4.position.set(-4.35, 1, -7);
 				point_lights.push(point_light_4);
 			});
+
 
 			//TEXTURES LOADER
 			var txt_loader = new THREE.TextureLoader(loading_manager);
@@ -249,7 +247,7 @@
 				controls = new OrbitControls(camera, renderer.domElement);
 				//controls.enablePan = false;
 				//controls.enableRotate = false;
-				controls.enableZoom = false;
+				//controls.enableZoom = false;
 
 				//FLOOR
 				var floor_material = new THREE.MeshLambertMaterial({map: floor_texture, color:0xb2b2b2 });
@@ -423,7 +421,7 @@
 					move_left = false;
 					move_right = false;
 					move_backwards = false;
-					resetModelPosition();
+					resetModelStance();
 				}
 			};
 
@@ -433,25 +431,25 @@
 					running = false;
 					move_forward = false;
 					facing_forward = false;
-					resetModelPosition();
+					resetModelStance();
 				}
 				else if(key == 65){
 					running = false;
 					move_left = false;
 					facing_left = false;
-					resetModelPosition();
+					resetModelStance();
 				}
 				else if(key == 68){
 					running = false;
 					move_right = false;
 					facing_right = false;
-					resetModelPosition();
+					resetModelStance();
 				}
 				else if(key == 83){
 					running = false;
 					move_backwards = false;
 					facing_backwards = false;
-					resetModelPosition();
+					resetModelStance();
 				}
 			};
 			function onResize(){
@@ -499,7 +497,7 @@
 
 
 
-			function resetModelPosition(){
+			function resetModelStance(){
 				TWEEN.getAll().forEach(function(tween){ 
 						tween.stop();
 				});
@@ -634,7 +632,7 @@
 					controls.update();
 					point_lights.forEach(function(l){ l.visible = true});
 
-					resetModelPosition();
+					resetModelStance();
 					document.getElementById("win").remove();
 					animate();
 				});
