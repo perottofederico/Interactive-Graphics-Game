@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>My app</title>
+		<title>Lights Minigame</title>
 		<style>
 			body { margin: 0; }
 			canvas { display: block; }
@@ -13,6 +13,12 @@
 	</head>
 
 	<body>
+		<div id="loading" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; font-size: xx-large; background: grey">
+			<div>
+				<div>Loading</div>
+				<div class="progress" style="width: 50vw; border: 1px solid black"><div id="progressbar" style="width: 0; transition: width ease-out .5s; height: 1em; background-color: #888; background-image: linear-gradient(-45deg, rgba(255, 255, 255, .5) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .5) 50%, rgba(255, 255, 255, .5) 75%, transparent 75%, transparent); background-size: 50px 50px; animation: progressanim 2s linear infinite;"></div></div>
+			</div>
+		</div>
 		<script type="module">
 
 			import * as THREE from './three/build/three.module.js';
@@ -20,10 +26,12 @@
 			import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 			import { GLTFLoader } from './three/examples/jsm/loaders/GLTFLoader.js';
 			import TWEEN from './js/tween.esm.js';
-			var scene, camera, renderer, controls, stats, clock, timer;
-			var model;
+			var scene, camera, renderer, controls, stats, clock, timer, model;
 
-			var running = false;
+			var z_axis_forward = new THREE.Vector3(0, 0, 1);
+			var z_axis_backward = new THREE.Vector3(0, 0, -1);
+			var x_axis_forward = new THREE.Vector3(1, 0, 0);
+			var x_axis_backward = new THREE.Vector3(-1, 0, 0);
 
 			var collidable_objects = [];
 			var point_lights = [];
@@ -31,6 +39,7 @@
 			var point_light_1, point_light_2, point_light_3, point_light_4;
 			var column_1, column_2;
 
+			var running = false;
 			var move_forward = false;
 			var facing_forward = false;
 			var move_left = false;
@@ -40,10 +49,10 @@
 			var move_backwards = false;
 			var facing_backwards = false;
 
-			var ray_forward = new THREE.Raycaster(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,1), 0.1,0.7);
-			var ray_left = new THREE.Raycaster(new THREE.Vector3(0,0,0), new THREE.Vector3(1,0,0), 0.1, 0.7);
-			var ray_right = new THREE.Raycaster(new THREE.Vector3(0,0,0), new THREE.Vector3(-1,0,0), 0.1, 0.7);
-			var ray_back = new THREE.Raycaster(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-1), 0.1, 0.7);
+			var ray_forward = new THREE.Raycaster(new THREE.Vector3(0,0,0), z_axis_forward, 0.1,0.7);
+			var ray_left = new THREE.Raycaster(new THREE.Vector3(0,0,0), x_axis_forward, 0.1, 0.7);
+			var ray_right = new THREE.Raycaster(new THREE.Vector3(0,0,0),x_axis_backward, 0.1, 0.7);
+			var ray_back = new THREE.Raycaster(new THREE.Vector3(0,0,0), x_axis_backward, 0.1, 0.7);
 
 			var prevTime = performance.now();
 
@@ -77,11 +86,14 @@
 				console.log( 'Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
 			};
 			loading_manager.onLoad = function ( ) {
+				var elem = document.querySelector('#loading').style.display = 'none';
 				console.log( 'Loading complete!');
 				init();
-				console.log('STARTED INIT');
 			};
 			loading_manager.onProgress = function ( url, itemsLoaded, itemsTotal ) {
+				const elem = document.querySelector('#progressbar');
+				elem.style.width = itemsLoaded/itemsTotal * 125 +'%';
+				console.log(elem.style.width);
 				console.log( 'Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.' );
 			};
 			loading_manager.onError = function ( url ) {
@@ -93,7 +105,7 @@
 			loader.load('./assets/RiggedFigure.glb', function(glb){
 				model = glb.scene;
 				model.traverse(function(object){
-					if(object.isMesh) object.castShadow = true;
+					//if(object.isMesh) object.castShadow = true;
 					switch(object.name){
 						case 'torso_joint_1': torso_joint_1 = object;
 						case 'torso_joint_2': torso_joint_2 = object;
@@ -150,7 +162,10 @@
 				torch_3.scale.set(0.2,0.2,0.2);
 
 				point_light_3 = new THREE.PointLight(0xef7807, 1, 10, 2);
-				
+
+				point_light_3.shadow.mapSize.width = 128;
+				point_light_3.shadow.mapSize.height = 128;
+
 				torch_3.position.set(4.65, 1, 7);
 				torch_3.rotation.y = Math.PI/2;		
 				point_light_3.position.set(4.6, 1, 7);
@@ -202,11 +217,11 @@
 				scene.add(camera);
 
 				//LIGHTS
-				var hemilight = new THREE.HemisphereLight(0xffffff, 0x080820, 0.4);
+				
+				var hemilight = new THREE.HemisphereLight(0xffcf8b, 0x080820, 0.4);
 				hemilight.position.set(0, 20, 0);
-				scene.add(hemilight);
-/*
-				var dirlight = new THREE.DirectionalLight(0xffffff);
+				scene.add(hemilight);/*
+				var dirlight = new THREE.DirectionalLight(0xffffff, 0.4);
 				dirlight.position.set(-3, 10, -10);
 				dirlight.castShadow = true;
 				dirlight.shadow.camera.top = 2;
@@ -234,6 +249,7 @@
 				controls = new OrbitControls(camera, renderer.domElement);
 				//controls.enablePan = false;
 				//controls.enableRotate = false;
+				controls.enableZoom = false;
 
 				//FLOOR
 				var floor_material = new THREE.MeshLambertMaterial({map: floor_texture, color:0xb2b2b2 });
@@ -340,6 +356,7 @@
 
 			document.addEventListener('keydown', onKeyDown, false);
 			document.addEventListener('keyup', onKeyUp, false);
+			window.addEventListener('resize', onResize, false);
 			function onKeyDown(event){
 				var key = event.which;
 				if(key == 87 && (move_left == false && move_right == false && move_backwards == false)){
@@ -398,6 +415,7 @@
 								l.visible = false;
 						}
 					})
+					move_left = move_right = move_forward = move_backwards = false;
 				}
 				else{
 					running = false;
@@ -436,6 +454,11 @@
 					resetModelPosition();
 				}
 			};
+			function onResize(){
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+			}
 
 
 
@@ -500,6 +523,7 @@
 
 
 			function animate(){
+				//Check for victory condition before requesting next frame
 				if(off == 2){
 					victory(clock.getElapsedTime());
 					return;
@@ -513,21 +537,21 @@
 				column_1.rotation.y += delta/10;
 				column_2.rotation.y -= delta/10;
 
-				ray_forward.set(new THREE.Vector3(model.position.x, 1, model.position.z + 0.1), new THREE.Vector3(0, 0, 1));			
-				ray_left.set(new THREE.Vector3(model.position.x+0.1, 1, model.position.z), new THREE.Vector3(1, 0, 0));
-				ray_right.set(new THREE.Vector3(model.position.x-0.1, 1, model.position.z), new THREE.Vector3(-1, 0, 0));
-				ray_back.set(new THREE.Vector3(model.position.x, 1, model.position.z-0.1), new THREE.Vector3(0, 0, -1));
+				ray_forward.set(new THREE.Vector3(model.position.x, 1, model.position.z + 0.1),z_axis_forward);
+				ray_left.set(new THREE.Vector3(model.position.x+0.1, 1, model.position.z), x_axis_forward);
+				ray_right.set(new THREE.Vector3(model.position.x-0.1, 1, model.position.z), x_axis_backward);
+				ray_back.set(new THREE.Vector3(model.position.x, 1, model.position.z-0.1), z_axis_backward);
 
 				if(ray_forward.intersectObjects(collidable_objects).length > 0){
 					move_forward = false;
 				}
-				if(ray_left.intersectObjects(collidable_objects).length > 0){
+				else if(ray_left.intersectObjects(collidable_objects).length > 0){
 					move_left = false;
 				}
-				if(ray_right.intersectObjects(collidable_objects).length > 0){
+				else if(ray_right.intersectObjects(collidable_objects).length > 0){
 					move_right = false;
 				}
-				if(ray_back.intersectObjects(collidable_objects).length > 0){
+				else if(ray_back.intersectObjects(collidable_objects).length > 0){
 					move_backwards = false;
 				}
 
@@ -604,15 +628,12 @@
 				new_game.addEventListener('click', function(){
 					off = 0;
 					model.position.set(0, 0, -7);
+					model.rotation.set(0, 0, 0);
 					camera.position.set(0, 2.5, -11.5);
 					controls.target.set(model.position.x, 0.5, model.position.z);
 					controls.update();
 					point_lights.forEach(function(l){ l.visible = true});
-					if(facing_forward == false){
-						facing_forward = true;
-						turnFront();
 
-					}
 					resetModelPosition();
 					document.getElementById("win").remove();
 					animate();
